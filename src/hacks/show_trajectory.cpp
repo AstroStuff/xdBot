@@ -88,10 +88,15 @@ void ShowTrajectory::createTrajectory(PlayLayer* pl, PlayerObject* fakePlayer, P
             break;
         }
 
+        // Modify this part to apply trajectory for both directions in platformer mode
         if (i == 0) {
             hold ? fakePlayer->pushButton(static_cast<PlayerButton>(1)) : fakePlayer->releaseButton(static_cast<PlayerButton>(1));
-            if (pl->m_levelSettings->m_platformerMode)
-                realPlayer->m_isGoingLeft ? fakePlayer->pushButton(static_cast<PlayerButton>(2)) : fakePlayer->pushButton(static_cast<PlayerButton>(3));
+            
+            // Always push both left and right buttons in platformer mode to calculate both trajectories
+            if (pl->m_levelSettings->m_platformerMode) {
+                fakePlayer->pushButton(static_cast<PlayerButton>(2));  // Left
+                fakePlayer->pushButton(static_cast<PlayerButton>(3));  // Right
+            }
         }
 
         fakePlayer->update(delta);
@@ -101,17 +106,16 @@ void ShowTrajectory::createTrajectory(PlayLayer* pl, PlayerObject* fakePlayer, P
         cocos2d::ccColor4F color = hold ? t.color2 : t.color1;
 
         if (!hold) {
-            if ((player2 && t.player2Trajectory[i] == prevPos) || !player2 && t.player1Trajectory[i] == prevPos)
+            if ((player2 && t.player2Trajectory[i] == prevPos) || (!player2 && t.player1Trajectory[i] == prevPos)) {
                 color = t.color3;
+            }
         }
 
         if (i >= t.length - 40)
             color.a = (t.length - i) / 40.f;
 
         t.trajectoryNode()->drawSegment(prevPos, fakePlayer->getPosition(), 0.6f, color);
-
     }
-
 }
 
 void ShowTrajectory::drawPlayerHitbox(PlayerObject* player, CCDrawNode* drawNode) {
